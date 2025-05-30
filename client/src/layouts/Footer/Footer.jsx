@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import images from '../../data/image';
 
 const Footer = () => {
     const [hovered, setHovered] = useState(null);
@@ -260,7 +261,7 @@ const Footer = () => {
                                 ))}
                             </div>
                             <div className="mt-4 text-center text-sm-start">
-                                <img src="https://online.gov.vn/Content/EndUser/LogoCCDVSaleNoti/logoSaleNoti.png" alt="Bộ Công Thương" height="40" className="img-fluid" style={{ maxHeight: '40px' }} />
+                                <img src={images.bct} alt="Bộ Công Thương" height="40" className="img-fluid" style={{ maxHeight: '60px' }} />
                             </div>
                         </div>
                     </div>
