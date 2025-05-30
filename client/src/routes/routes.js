@@ -2,6 +2,7 @@ import Home from '../pages/Home/Home'
 import Login from '../pages/Login/Login'
 import Register from '../pages/Register/Register'
 import ForgotPassword from '../pages/ForgotPassword/ForgotPassword'
+import Cart from '../pages/Cart/Cart'
 import React from 'react'
 import { DefaultLayout } from '../layouts'
 
@@ -11,6 +12,7 @@ const publicRoutes = [
     { path: '/login', component: Login },
     { path: '/register', component: Register },
     { path: '/forgot-password', component: ForgotPassword },
+    { path: '/cart', component: Cart },
     // Add other routes here as needed
 ]
 
