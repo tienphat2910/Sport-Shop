@@ -7,6 +7,7 @@ const Navigation = () => {
     const [activeSubMenu, setActiveSubMenu] = useState(null);
     const [hoveredItem, setHoveredItem] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
     // Check if the viewport is mobile
     useEffect(() => {
@@ -20,9 +21,21 @@ const Navigation = () => {
         // Add event listener
         window.addEventListener('resize', checkIfMobile);
 
+        // Close dropdown when clicking outside
+        const handleClickOutside = (event) => {
+            if (userDropdownOpen && !event.target.closest('.user-dropdown-container')) {
+                setUserDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+
         // Cleanup
-        return () => window.removeEventListener('resize', checkIfMobile);
-    }, []);
+        return () => {
+            window.removeEventListener('resize', checkIfMobile);
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [userDropdownOpen]);
 
     // Link hover styles
     const getLinkStyle = (item) => {
@@ -85,6 +98,37 @@ const Navigation = () => {
 
     const handleLinkLeave = () => {
         setHoveredItem(null);
+    };
+
+    // Toggle user dropdown
+    const toggleUserDropdown = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setUserDropdownOpen(!userDropdownOpen);
+    };
+
+    // Define common dropdown menu styles
+    const mainDropdownStyle = {
+        display: activeMainMenu ? 'block' : 'none',
+        margin: '0',
+        padding: '8px 0',
+        borderRadius: '4px',
+        border: 'none',
+        minWidth: '200px',
+        zIndex: 1000,
+        marginTop: '0.125rem'
+    };
+
+    const subDropdownStyle = {
+        display: activeSubMenu ? 'block' : 'none',
+        left: '100%',
+        top: '0',
+        margin: '0',
+        padding: '8px 0',
+        borderRadius: '4px',
+        border: 'none',
+        minWidth: '220px',
+        zIndex: 1001
     };
 
     return (
@@ -153,6 +197,7 @@ const Navigation = () => {
                             <ul
                                 className="dropdown-menu shadow"
                                 style={{
+                                    ...mainDropdownStyle,
                                     display: activeMainMenu === 'theThao' ? 'block' : 'none'
                                 }}
                             >
@@ -180,10 +225,8 @@ const Navigation = () => {
                                     <ul
                                         className="dropdown-menu shadow"
                                         style={{
-                                            display: activeSubMenu === 'bongDa' ? 'block' : 'none',
-                                            left: '100%',
-                                            top: '0',
-                                            margin: '0'
+                                            ...subDropdownStyle,
+                                            display: activeSubMenu === 'bongDa' ? 'block' : 'none'
                                         }}
                                     >
                                         <li>
@@ -264,6 +307,7 @@ const Navigation = () => {
                             <ul
                                 className="dropdown-menu shadow"
                                 style={{
+                                    ...mainDropdownStyle,
                                     display: activeMainMenu === 'thoiTrang' ? 'block' : 'none'
                                 }}
                             >
@@ -291,10 +335,8 @@ const Navigation = () => {
                                     <ul
                                         className="dropdown-menu shadow"
                                         style={{
-                                            display: activeSubMenu === 'nike' ? 'block' : 'none',
-                                            left: '100%',
-                                            top: '0',
-                                            margin: '0'
+                                            ...subDropdownStyle,
+                                            display: activeSubMenu === 'nike' ? 'block' : 'none'
                                         }}
                                     >
                                         <li>
@@ -357,10 +399,8 @@ const Navigation = () => {
                                     <ul
                                         className="dropdown-menu shadow"
                                         style={{
-                                            display: activeSubMenu === 'adidas' ? 'block' : 'none',
-                                            left: '100%',
-                                            top: '0',
-                                            margin: '0'
+                                            ...subDropdownStyle,
+                                            display: activeSubMenu === 'adidas' ? 'block' : 'none'
                                         }}
                                     >
                                         <li>
@@ -577,9 +617,42 @@ const Navigation = () => {
                     {/* Right side icons for desktop */}
                     {!isMobile && (
                         <div className="d-flex align-items-center">
-                            <Link className="nav-link px-2 px-md-3" to="/account" aria-label="Account">
-                                <i className="fa-solid fa-user"></i>
-                            </Link>
+                            <div className="nav-item dropdown user-dropdown-container">
+                                <a
+                                    className="nav-link px-2 px-md-3"
+                                    href="#"
+                                    role="button"
+                                    onClick={toggleUserDropdown}
+                                    aria-expanded={userDropdownOpen ? "true" : "false"}
+                                >
+                                    <i className="fa-solid fa-user"></i>
+                                </a>
+                                <ul
+                                    className={`dropdown-menu dropdown-menu-end shadow ${userDropdownOpen ? 'show' : ''}`}
+                                    style={{
+                                        minWidth: '200px',
+                                        margin: '0.125rem 0 0',
+                                        padding: '8px 0',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        zIndex: 1000
+                                    }}
+                                >
+                                    <li>
+                                        <Link className="dropdown-item py-2" to="/login">
+                                            <i className="fa-solid fa-right-to-bracket me-2"></i>
+                                            Đăng nhập
+                                        </Link>
+                                    </li>
+                                    <li><hr className="dropdown-divider" /></li>
+                                    <li>
+                                        <Link className="dropdown-item py-2" to="/register">
+                                            <i className="fa-solid fa-user-plus me-2"></i>
+                                            Đăng ký
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
                             <Link className="nav-link px-2 px-md-3" to="/search" aria-label="Search">
                                 <i className="fa-solid fa-magnifying-glass"></i>
                             </Link>
@@ -595,8 +668,11 @@ const Navigation = () => {
                     {/* Account section for mobile - at the bottom of menu */}
                     {isMobile && (
                         <div className="mt-3 pt-3 border-top">
-                            <Link to="/account" className="btn btn-outline-primary d-block mb-2">
-                                <i className="fa-solid fa-user me-2"></i>Đăng nhập / Đăng ký
+                            <Link to="/login" className="btn btn-outline-primary d-block mb-2">
+                                <i className="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập
+                            </Link>
+                            <Link to="/register" className="btn btn-outline-secondary d-block mb-2">
+                                <i className="fa-solid fa-user-plus me-2"></i>Đăng ký
                             </Link>
                             <div className="d-flex justify-content-between mt-3">
                                 <Link to="/wishlist" className="text-decoration-none text-secondary small">
