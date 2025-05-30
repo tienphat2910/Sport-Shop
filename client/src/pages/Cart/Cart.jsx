@@ -162,17 +162,13 @@ const Cart = () => {
                                 <div className="d-flex flex-wrap gap-2 mb-2">
                                     <i className="fab fa-cc-visa fs-2 text-primary"></i>
                                     <i className="fab fa-cc-mastercard fs-2 text-danger"></i>
-                                    <i className="fab fa-cc-jcb fs-2 text-success"></i>
-                                    <i className="fab fa-cc-paypal fs-2 text-info"></i>
-                                </div>
-                                <div className="d-flex flex-wrap gap-2">
                                     <i className="fab fa-cc-apple-pay fs-2"></i>
                                     <i className="fab fa-google-pay fs-2 text-danger"></i>
-                                    {/* Momo icon (using a styled span since there's no FontAwesome icon) */}
-                                    <span className="fs-2 d-inline-flex align-items-center justify-content-center rounded px-2"
-                                        style={{ backgroundColor: '#ae2070', color: 'white', height: '40px', width: '40px' }}>
-                                        M
-                                    </span>
+                                </div>
+                                <div className="d-flex flex-wrap gap-2">
+                                    <img src="https://cdn2.cellphones.com.vn/x/media/wysiwyg/momo_1.png" alt="Momo" className="img-fluid" style={{ width: '40px' }} />
+                                    <img src="https://cdn2.cellphones.com.vn/x35,webp/media/logo/payment/vnpay-logo.png" alt="vnpay" className="img-fluid" style={{ width: '40px' }} />
+                                    <img src="https://cdn2.cellphones.com.vn/x35,webp/media/logo/payment/zalopay-logo.png" alt="zalopay" className="img-fluid" style={{ width: '40px' }} />
                                 </div>
                             </div>
                         </div>

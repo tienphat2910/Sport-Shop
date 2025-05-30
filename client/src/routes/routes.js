@@ -3,6 +3,8 @@ import Login from '../pages/Login/Login'
 import Register from '../pages/Register/Register'
 import ForgotPassword from '../pages/ForgotPassword/ForgotPassword'
 import Cart from '../pages/Cart/Cart'
+import Checkout from '../pages/Checkout/Checkout'
+import OrderSuccess from '../pages/OrderSuccess/OrderSuccess'
 import React from 'react'
 import { DefaultLayout } from '../layouts'
 
@@ -13,6 +15,8 @@ const publicRoutes = [
     { path: '/register', component: Register },
     { path: '/forgot-password', component: ForgotPassword },
     { path: '/cart', component: Cart },
+    { path: '/checkout', component: Checkout },
+    { path: '/order-success', component: OrderSuccess },
     // Add other routes here as needed
 ]
 
