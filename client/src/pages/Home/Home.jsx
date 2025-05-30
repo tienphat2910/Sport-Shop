@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Navigation from '../../layouts/Header/Navigation';
-import Footer from '../../layouts/Footer/Footer';
+import { DefaultLayout } from '../../layouts';
 import BannerCarousel from '../../components/Home/BannerCarousel';
 import CategorySection from '../../components/Home/CategorySection';
 import FeaturedOffers from '../../components/Home/FeaturedOffers';
@@ -18,23 +17,19 @@ const Home = () => {
     }, []);
 
     return (
-        <>
-            <Navigation />
-            <div className="container-fluid container-lg px-0 px-sm-3 px-lg-4">
-                {/* Banner Section */}
-                <BannerCarousel />
+        <DefaultLayout>
+            {/* Banner Section */}
+            <BannerCarousel />
 
-                {/* Category Section */}
-                <CategorySection loading={loading} />
+            {/* Category Section */}
+            <CategorySection loading={loading} />
 
-                {/* Featured Offers */}
-                <FeaturedOffers />
+            {/* Featured Offers */}
+            <FeaturedOffers />
 
-                {/* Product Cards */}
-                <ProductCards />
-            </div>
-            <Footer />
-        </>
+            {/* Product Cards */}
+            <ProductCards />
+        </DefaultLayout>
     );
 };
 
