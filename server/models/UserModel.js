@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
             trim: true,
         },
+        username: {
+            type: String,
+            sparse: true,  // This allows null values while still enforcing uniqueness for non-null values
+            unique: true,
+            trim: true,
+        },
         password: {
             type: String,
             required: [true, "Password không được để trống"],

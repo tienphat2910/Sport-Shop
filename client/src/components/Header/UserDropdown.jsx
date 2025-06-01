@@ -1,24 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getCurrentUser, logoutUser, isAuthenticated } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
 const UserDropdown = () => {
     const navigate = useNavigate();
+    const { currentUser, logout } = useAuth();
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [user, setUser] = useState(null);
-    const [authenticated, setAuthenticated] = useState(false);
     const dropdownRef = useRef(null);
-
-    useEffect(() => {
-        // Check authentication status and get user data
-        const authStatus = isAuthenticated();
-        setAuthenticated(authStatus);
-
-        if (authStatus) {
-            const userData = getCurrentUser();
-            setUser(userData);
-        }
-    }, []);
 
     const toggleDropdown = (e) => {
         e.preventDefault();
@@ -29,9 +17,7 @@ const UserDropdown = () => {
     const handleLogout = () => {
         // Show confirmation dialog before logging out
         if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-            logoutUser();
-            setUser(null);
-            setAuthenticated(false);
+            logout();
             setDropdownOpen(false);
             navigate('/login');
         }
@@ -51,6 +37,30 @@ const UserDropdown = () => {
         };
     }, []);
 
+    // Get user display name or extract from email
+    const getUserName = () => {
+        if (currentUser) {
+            return currentUser.displayName || currentUser.email.split('@')[0];
+        }
+        return '';
+    };
+
+    // Get user initials for avatar
+    const getUserInitials = () => {
+        if (currentUser) {
+            if (currentUser.displayName) {
+                return currentUser.displayName
+                    .split(' ')
+                    .map(part => part[0])
+                    .join('')
+                    .toUpperCase()
+                    .substring(0, 2);
+            }
+            return currentUser.email.substring(0, 2).toUpperCase();
+        }
+        return '';
+    };
+
     // Show different dropdown content based on authentication status
     return (
         <div className="nav-item dropdown user-dropdown-container" ref={dropdownRef}>
@@ -62,10 +72,10 @@ const UserDropdown = () => {
                 aria-expanded={dropdownOpen ? "true" : "false"}
                 style={{ color: '#22a7e0' }}
             >
-                {authenticated && user ? (
+                {currentUser ? (
                     <>
                         <i className="fa-solid fa-circle-user me-2"></i>
-                        <span className="d-none d-md-inline">{user.name}</span>
+                        <span className="d-none d-md-inline">{getUserName()}</span>
                     </>
                 ) : (
                     <i className="fa-solid fa-user"></i>
@@ -81,20 +91,29 @@ const UserDropdown = () => {
                     borderRadius: '4px',
                     border: 'none',
                     zIndex: 1000,
-                    right: '-85px' // Add this line to move the dropdown 10px from the right edge
+                    right: '-85px'
                 }}
             >
-                {authenticated && user ? (
+                {currentUser ? (
                     <>
                         <li className="dropdown-header">
                             <div className="d-flex align-items-center mb-2">
-                                <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                    style={{ width: '40px', height: '40px', fontSize: '16px' }}>
-                                    {user.name.split(' ').map(part => part[0]).join('').toUpperCase().substring(0, 2)}
-                                </div>
+                                {currentUser.photoURL ? (
+                                    <img 
+                                        src={currentUser.photoURL} 
+                                        alt="Profile" 
+                                        className="rounded-circle me-2"
+                                        style={{ width: '40px', height: '40px' }}
+                                    />
+                                ) : (
+                                    <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                                        style={{ width: '40px', height: '40px', fontSize: '16px' }}>
+                                        {getUserInitials()}
+                                    </div>
+                                )}
                                 <div>
-                                    <div className="fw-bold">{user.name}</div>
-                                    <div className="text-muted small">{user.email}</div>
+                                    <div className="fw-bold">{getUserName()}</div>
+                                    <div className="text-muted small">{currentUser.email}</div>
                                 </div>
                             </div>
                         </li>

@@ -2,6 +2,7 @@ import Home from '../pages/Home/Home'
 import Login from '../pages/Login/Login'
 import Register from '../pages/Register/Register'
 import ForgotPassword from '../pages/ForgotPassword/ForgotPassword'
+import VerifyEmail from '../pages/VerifyEmail/VerifyEmail'
 import Cart from '../pages/Cart/Cart'
 import Checkout from '../pages/Checkout/Checkout'
 import OrderSuccess from '../pages/OrderSuccess/OrderSuccess'
@@ -14,6 +15,7 @@ const publicRoutes = [
     { path: '/login', component: Login },
     { path: '/register', component: Register },
     { path: '/forgot-password', component: ForgotPassword },
+    { path: '/verify-email', component: VerifyEmail },
     { path: '/cart', component: Cart },
     { path: '/checkout', component: Checkout },
     { path: '/order-success', component: OrderSuccess },

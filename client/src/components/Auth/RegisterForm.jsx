@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { registerUser } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
 const RegisterForm = () => {
     const navigate = useNavigate();
+    const { register } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -88,27 +89,28 @@ const RegisterForm = () => {
         setLoading(true);
 
         try {
-            // Real API call to register the user
-            const userData = {
-                name: formData.name,
-                email: formData.email,
-                password: formData.password
-            };
-
-            const response = await registerUser(userData);
-
-            console.log('Registration successful:', response);
-
+            // Firebase registration
+            await register(formData.name, formData.email, formData.password);
+            
+            console.log('Registration successful, verification email sent');
+            
             setSuccessMessage(
-                'Đăng ký thành công! Chúng tôi đã gửi mã OTP đến email của bạn. Vui lòng kiểm tra email và xác thực tài khoản.'
+                'Đăng ký thành công! Chúng tôi đã gửi email xác thực đến địa chỉ email của bạn. Vui lòng kiểm tra hộp thư đến và xác nhận email.'
             );
-
-            // Optionally navigate to verification page or login page
-            // setTimeout(() => navigate('/verify-email', { state: { email: formData.email } }), 3000);
+            
+            // Clear form
+            setFormData({
+                name: '',
+                email: '',
+                password: '',
+                confirmPassword: '',
+                acceptTerms: false
+            });
+            
         } catch (error) {
             console.error('Registration error:', error);
-
-            if (error.status === 400 && error.data?.message?.includes('Email already registered')) {
+            
+            if (error.code === 'auth/email-already-in-use') {
                 setErrors({
                     email: 'Email này đã được đăng ký. Vui lòng sử dụng email khác.'
                 });

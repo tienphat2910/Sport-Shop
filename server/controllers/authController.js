@@ -38,6 +38,7 @@ exports.register = async (req, res) => {
         const newUser = new User({
             name,
             email,
+            username: null,  // Explicitly set username to null
             password,
             phone,
             address,
