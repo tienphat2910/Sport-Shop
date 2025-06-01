@@ -1,33 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { isAuthenticated, getCurrentUser, logoutUser } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
 const MobileMenu = () => {
     const navigate = useNavigate();
-    const [authenticated, setAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
-
-    useEffect(() => {
-        const checkAuth = () => {
-            const authStatus = isAuthenticated();
-            setAuthenticated(authStatus);
-
-            if (authStatus) {
-                const userData = getCurrentUser();
-                setUser(userData);
-            } else {
-                setUser(null);
-            }
-        };
-
-        checkAuth();
-    }, []);
+    const { currentUser, logout } = useAuth();
 
     const handleLogout = () => {
-        logoutUser();
-        setAuthenticated(false);
-        setUser(null);
-        navigate('/login');
+        if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+            logout();
+            navigate('/login');
+        }
+    };
+
+    // Get user display name or extract from email
+    const getUserName = () => {
+        if (currentUser) {
+            return currentUser.displayName || currentUser.name || currentUser.email.split('@')[0];
+        }
+        return '';
     };
 
     return (
@@ -167,18 +158,18 @@ const MobileMenu = () => {
 
             {/* Account section for mobile */}
             <div className="mt-3 pt-3 border-top">
-                {authenticated && user ? (
+                {currentUser ? (
                     <>
                         <div className="d-flex align-items-center mb-3">
                             <div
                                 className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
                                 style={{ width: '40px', height: '40px', fontSize: '16px' }}
                             >
-                                {user.name.split(' ').map(part => part[0]).join('').toUpperCase().substring(0, 2)}
+                                {getUserName().substring(0, 2).toUpperCase()}
                             </div>
                             <div>
-                                <div className="fw-bold">{user.name}</div>
-                                <div className="text-muted small">{user.email}</div>
+                                <div className="fw-bold">{getUserName()}</div>
+                                <div className="text-muted small">{currentUser.email}</div>
                             </div>
                         </div>
                         <Link to="/profile" className="btn btn-outline-primary d-block mb-2">

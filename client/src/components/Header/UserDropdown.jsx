@@ -8,6 +8,12 @@ const UserDropdown = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
 
+    // Debug info to help troubleshoot
+    useEffect(() => {
+        console.log("UserDropdown - Current user state:", currentUser);
+        console.log("UserDropdown - Stored user:", localStorage.getItem('currentUser'));
+    }, [currentUser]);
+
     const toggleDropdown = (e) => {
         e.preventDefault();
         e.stopPropagation(); // Stop event from bubbling up
@@ -37,28 +43,51 @@ const UserDropdown = () => {
         };
     }, []);
 
-    // Get user display name or extract from email
+    // Get user display name or extract from email with fallbacks
     const getUserName = () => {
-        if (currentUser) {
-            return currentUser.displayName || currentUser.email.split('@')[0];
+        if (!currentUser) {
+            // Try to get from localStorage if context isn't updated yet
+            try {
+                const storedUser = localStorage.getItem('currentUser');
+                if (storedUser) {
+                    const userData = JSON.parse(storedUser);
+                    return userData.name || userData.displayName || userData.email.split('@')[0];
+                }
+            } catch (e) {
+                console.error("Error parsing stored user data:", e);
+            }
+            return '';
         }
-        return '';
+
+        return currentUser.name || currentUser.displayName || currentUser.email.split('@')[0];
     };
 
-    // Get user initials for avatar
+    // Get user initials for avatar with better fallbacks
     const getUserInitials = () => {
-        if (currentUser) {
-            if (currentUser.displayName) {
-                return currentUser.displayName
-                    .split(' ')
-                    .map(part => part[0])
-                    .join('')
-                    .toUpperCase()
-                    .substring(0, 2);
-            }
-            return currentUser.email.substring(0, 2).toUpperCase();
+        const userName = getUserName();
+
+        if (!userName) return '';
+
+        // If it's an email-derived username, just take first two chars
+        if (userName.includes('@')) {
+            return userName.substring(0, 2).toUpperCase();
         }
-        return '';
+
+        // Otherwise get initials from name parts
+        return userName
+            .split(' ')
+            .map(part => part[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
+    };
+
+    // Check if user is logged in (with localStorage fallback)
+    const isLoggedIn = () => {
+        if (currentUser) return true;
+
+        // Fallback to localStorage check
+        return localStorage.getItem('authToken') && localStorage.getItem('currentUser');
     };
 
     // Show different dropdown content based on authentication status
@@ -72,7 +101,7 @@ const UserDropdown = () => {
                 aria-expanded={dropdownOpen ? "true" : "false"}
                 style={{ color: '#22a7e0' }}
             >
-                {currentUser ? (
+                {isLoggedIn() ? (
                     <>
                         <i className="fa-solid fa-circle-user me-2"></i>
                         <span className="d-none d-md-inline">{getUserName()}</span>
@@ -94,26 +123,21 @@ const UserDropdown = () => {
                     right: '-85px'
                 }}
             >
-                {currentUser ? (
+                {isLoggedIn() ? (
                     <>
                         <li className="dropdown-header">
                             <div className="d-flex align-items-center mb-2">
-                                {currentUser.photoURL ? (
-                                    <img 
-                                        src={currentUser.photoURL} 
-                                        alt="Profile" 
-                                        className="rounded-circle me-2"
-                                        style={{ width: '40px', height: '40px' }}
-                                    />
-                                ) : (
-                                    <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                                        style={{ width: '40px', height: '40px', fontSize: '16px' }}>
-                                        {getUserInitials()}
-                                    </div>
-                                )}
+                                <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                                    style={{ width: '40px', height: '40px', fontSize: '16px' }}>
+                                    {getUserInitials()}
+                                </div>
                                 <div>
                                     <div className="fw-bold">{getUserName()}</div>
-                                    <div className="text-muted small">{currentUser.email}</div>
+                                    <div className="text-muted small">
+                                        {currentUser?.email ||
+                                            JSON.parse(localStorage.getItem('currentUser') || '{}').email ||
+                                            ''}
+                                    </div>
                                 </div>
                             </div>
                         </li>

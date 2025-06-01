@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loginUser } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import LoginSuccessModal from './LoginSuccessModal';
 
-const LoginForm = () => {
+const LoginForm = ({ initialEmail = '' }) => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
-        email: '',
+        email: initialEmail,
         password: '',
         rememberMe: false
     });
@@ -64,18 +65,16 @@ const LoginForm = () => {
         setLoading(true);
 
         try {
-            // Real API call to authenticate
-            const response = await loginUser({
-                email: formData.email,
-                password: formData.password
-            });
-
+            // Use the login function from AuthContext
+            const response = await login(formData.email, formData.password);
             console.log('Login successful:', response);
 
-            // Set user name and show success modal
-            setUserName(response.user?.name || '');
-            setShowSuccessModal(true);
+            // Extract user data from the response
+            const userData = response.user || {};
 
+            // Set user name and show success modal
+            setUserName(userData.name || userData.displayName || formData.email.split('@')[0]);
+            setShowSuccessModal(true);
         } catch (error) {
             console.error('Login error:', error);
             setErrors({
@@ -89,8 +88,6 @@ const LoginForm = () => {
         setShowSuccessModal(false);
         // Navigate to home page after closing the modal
         navigate('/');
-        // Force reload to update header with user information
-        window.location.reload();
     };
 
     return (

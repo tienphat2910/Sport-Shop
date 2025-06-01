@@ -1,116 +1,124 @@
-import axios from 'axios';
+const API_URL = 'http://localhost:5000/api';
 
-// Access environment variables using import.meta.env for Vite
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY || 'sport_shop_token';
-const USER_KEY = import.meta.env.VITE_USER_KEY || 'sport_shop_user';
-
-// Create axios instance
-const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-
-// Add authorization header to requests when token exists
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Auth APIs
-export const registerUser = async (userData) => {
-    try {
-        const response = await api.post('/api/auth/register', userData);
-        return response.data;
-    } catch (error) {
-        throw handleApiError(error);
-    }
+// Helper functions to check authentication status
+export const isAuthenticated = () => {
+    return localStorage.getItem('authToken') !== null;
 };
 
+export const getCurrentUser = () => {
+    const user = localStorage.getItem('currentUser');
+    return user ? JSON.parse(user) : null;
+};
+
+export const getAuthToken = () => {
+    return localStorage.getItem('authToken');
+};
+
+// This will be integrated with the AuthContext
+export const logoutUser = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+};
+
+// User authentication
 export const loginUser = async (credentials) => {
     try {
-        const response = await api.post('/api/auth/login', credentials);
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(credentials),
+        });
 
-        // Save token and user data to localStorage
-        if (response.data.token) {
-            localStorage.setItem(TOKEN_KEY, response.data.token);
-            localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Login failed');
         }
 
-        return response.data;
+        // Store token and user data in localStorage
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        return data;
     } catch (error) {
-        throw handleApiError(error);
+        console.error('Login error:', error);
+        throw error;
     }
 };
 
-export const logoutUser = () => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-};
-
+// For verification
 export const verifyEmail = async (verificationData) => {
     try {
-        const response = await api.post('/api/auth/verify-email', verificationData);
-        return response.data;
+        const response = await fetch(`${API_URL}/auth/verify-email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(verificationData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Email verification failed');
+        }
+
+        return data;
     } catch (error) {
-        throw handleApiError(error);
+        console.error('Email verification error:', error);
+        throw error;
     }
 };
 
+// Password reset
 export const requestPasswordReset = async (email) => {
     try {
-        const response = await api.post('/api/auth/forgot-password', { email });
-        return response.data;
+        const response = await fetch(`${API_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Password reset request failed');
+        }
+
+        return data;
     } catch (error) {
-        throw handleApiError(error);
+        console.error('Password reset request error:', error);
+        throw error;
     }
 };
 
-// Helper function to handle API errors
-const handleApiError = (error) => {
-    if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        return {
-            status: error.response.status,
-            message: error.response.data.message || 'An error occurred',
-            data: error.response.data
-        };
-    } else if (error.request) {
-        // The request was made but no response was received
-        return {
-            status: 0,
-            message: 'No response from server. Please check your connection.'
-        };
-    } else {
-        // Something happened in setting up the request that triggered an Error
-        return {
-            status: 0,
-            message: error.message || 'An unknown error occurred'
-        };
+// Add authentication headers to requests
+export const authHeader = () => {
+    const token = getAuthToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
+// Function to make authenticated API requests
+export const fetchWithAuth = async (url, options = {}) => {
+    const headers = {
+        ...options.headers,
+        ...authHeader(),
+        'Content-Type': 'application/json',
+    };
+
+    const response = await fetch(url, {
+        ...options,
+        headers,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Request failed');
     }
-};
 
-// Get current authenticated user
-export const getCurrentUser = () => {
-    const userStr = localStorage.getItem(USER_KEY);
-    if (userStr) {
-        return JSON.parse(userStr);
-    }
-    return null;
+    return data;
 };
-
-// Check if user is authenticated
-export const isAuthenticated = () => {
-    return !!localStorage.getItem(TOKEN_KEY);
-};
-
-export default api;
