@@ -107,6 +107,36 @@ router.post('/auth/login', authController.login);
  */
 router.post('/auth/verify-email', authController.verifyEmail);
 
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     summary: Change user password
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       401:
+ *         description: Current password is incorrect
+ */
+router.post('/auth/change-password', protect, authController.changePassword);
+
 // User routes
 /**
  * @swagger

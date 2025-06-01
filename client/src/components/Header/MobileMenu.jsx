@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const MobileMenu = () => {
     const navigate = useNavigate();
-    const { currentUser, logout } = useAuth();
+    // Add safety check for useAuth
+    const auth = useAuth();
+    const currentUser = auth?.currentUser;
+    const logout = auth?.logout;
 
     const handleLogout = () => {
+        if (!logout) return;
+
         if (window.confirm('Bạn có chắc chắn muốn đăng xuất?')) {
             logout();
             navigate('/login');
@@ -16,7 +21,7 @@ const MobileMenu = () => {
     // Get user display name or extract from email
     const getUserName = () => {
         if (currentUser) {
-            return currentUser.displayName || currentUser.name || currentUser.email.split('@')[0];
+            return currentUser.name || currentUser.displayName || currentUser.email.split('@')[0];
         }
         return '';
     };

@@ -6,6 +6,7 @@ import VerifyEmail from '../pages/VerifyEmail/VerifyEmail'
 import Cart from '../pages/Cart/Cart'
 import Checkout from '../pages/Checkout/Checkout'
 import OrderSuccess from '../pages/OrderSuccess/OrderSuccess'
+import Profile from '../pages/Profile/Profile'
 import React from 'react'
 import { DefaultLayout } from '../layouts'
 
@@ -19,6 +20,7 @@ const publicRoutes = [
     { path: '/cart', component: Cart },
     { path: '/checkout', component: Checkout },
     { path: '/order-success', component: OrderSuccess },
+    { path: '/profile', component: Profile },
     // Add other routes here as needed
 ]
 

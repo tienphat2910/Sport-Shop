@@ -175,3 +175,45 @@ exports.verifyEmail = async (req, res) => {
         });
     }
 };
+
+// Change password
+exports.changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+
+        // Find user with password
+        const user = await User.findById(userId).select('+password');
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Check if current password is correct
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Mật khẩu hiện tại không đúng'
+            });
+        }
+
+        // Update password
+        user.password = newPassword;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Mật khẩu đã được thay đổi thành công'
+        });
+    } catch (error) {
+        console.error('Change password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Không thể thay đổi mật khẩu',
+            error: error.message
+        });
+    }
+};
