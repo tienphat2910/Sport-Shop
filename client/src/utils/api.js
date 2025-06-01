@@ -1,5 +1,52 @@
 const API_URL = 'http://localhost:5000/api';
 
+// Authentication
+export const verifyEmail = async (data) => {
+    try {
+        const response = await fetch(`${API_URL}/auth/verify-email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            throw new Error(responseData.message || 'Email verification failed');
+        }
+
+        return responseData;
+    } catch (error) {
+        console.error('Verification error:', error);
+        throw error;
+    }
+};
+
+export const requestPasswordReset = async (email) => {
+    try {
+        const response = await fetch(`${API_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Password reset request failed');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Password reset request error:', error);
+        throw error;
+    }
+};
+
 // Helper functions to check authentication status
 export const isAuthenticated = () => {
     return localStorage.getItem('authToken') !== null;
@@ -43,54 +90,6 @@ export const loginUser = async (credentials) => {
         return data;
     } catch (error) {
         console.error('Login error:', error);
-        throw error;
-    }
-};
-
-// For verification
-export const verifyEmail = async (verificationData) => {
-    try {
-        const response = await fetch(`${API_URL}/auth/verify-email`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(verificationData),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Email verification failed');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Email verification error:', error);
-        throw error;
-    }
-};
-
-// Password reset
-export const requestPasswordReset = async (email) => {
-    try {
-        const response = await fetch(`${API_URL}/auth/reset-password`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Password reset request failed');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Password reset request error:', error);
         throw error;
     }
 };

@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyEmail } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
-const OtpVerificationForm = ({ email }) => {
+const OtpVerificationForm = ({ email, name }) => {
     const navigate = useNavigate();
+    const { verifyOtp, resendOtp } = useAuth();
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -84,7 +85,8 @@ const OtpVerificationForm = ({ email }) => {
         setLoading(true);
 
         try {
-            await verifyEmail({ email, otp: otpValue });
+            // Use verifyOtp from AuthContext
+            await verifyOtp(email, otpValue);
             setSuccess(true);
             setError('');
 
@@ -107,17 +109,21 @@ const OtpVerificationForm = ({ email }) => {
     };
 
     // Handle resend OTP
-    const handleResendOtp = () => {
-        // In a real application, make an API call to resend OTP
-        console.log('Resending OTP to:', email);
-        setTimeLeft(300); // Reset timer to 5 minutes
-        setError('');
-
-        // Show a temporary message
-        setError('Mã OTP mới đã được gửi đến email của bạn');
-        setTimeout(() => {
+    const handleResendOtp = async () => {
+        try {
             setError('');
-        }, 5000);
+            // Use resendOtp from AuthContext
+            await resendOtp(email);
+            setTimeLeft(300); // Reset timer to 5 minutes
+
+            // Show a temporary success message
+            setError('Mã OTP mới đã được gửi đến email của bạn');
+            setTimeout(() => {
+                setError('');
+            }, 5000);
+        } catch (error) {
+            setError(error.message || 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.');
+        }
     };
 
     // If verification was successful, show success message

@@ -78,9 +78,63 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Registration failed');
       }
 
-      // Store token and user data
-      localStorage.setItem('authToken', data.token);
-      setCurrentUser(data.user);
+      return data; // Return data instead of storing token and setting currentUser
+    } catch (error) {
+      setError(getErrorMessage(error));
+      throw error;
+    }
+  };
+
+  // Verify OTP after registration
+  const verifyOtp = async (email, otp) => {
+    setError(null);
+    try {
+      const response = await fetch(`${API_URL}/auth/verify-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'OTP verification failed');
+      }
+
+      // After successful verification, store token and set user
+      if (data.token && data.user) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        setCurrentUser(data.user);
+      }
+
+      return data;
+    } catch (error) {
+      setError(getErrorMessage(error));
+      throw error;
+    }
+  };
+
+  // Resend OTP
+  const resendOtp = async (email) => {
+    setError(null);
+    try {
+      const response = await fetch(`${API_URL}/auth/resend-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to resend OTP');
+      }
+
       return data;
     } catch (error) {
       setError(getErrorMessage(error));
@@ -194,7 +248,9 @@ export const AuthProvider = ({ children }) => {
     loginWithFacebook,
     forgotPassword,
     logout: logoutUser,
-    getErrorMessage
+    getErrorMessage,
+    verifyOtp,
+    resendOtp
   };
 
   return (

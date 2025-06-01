@@ -89,28 +89,22 @@ const RegisterForm = () => {
         setLoading(true);
 
         try {
-            // Firebase registration
-            await register(formData.name, formData.email, formData.password);
-            
-            console.log('Registration successful, verification email sent');
-            
-            setSuccessMessage(
-                'Đăng ký thành công! Chúng tôi đã gửi email xác thực đến địa chỉ email của bạn. Vui lòng kiểm tra hộp thư đến và xác nhận email.'
-            );
-            
-            // Clear form
-            setFormData({
-                name: '',
-                email: '',
-                password: '',
-                confirmPassword: '',
-                acceptTerms: false
+            // Call register function from AuthContext
+            const response = await register(formData.name, formData.email, formData.password);
+
+            console.log('Registration successful, OTP sent');
+
+            // Redirect to OTP verification page instead of showing success message
+            navigate('/verify-email', {
+                state: {
+                    email: formData.email,
+                    name: formData.name
+                }
             });
-            
         } catch (error) {
             console.error('Registration error:', error);
-            
-            if (error.code === 'auth/email-already-in-use') {
+
+            if (error.message.includes('already in use')) {
                 setErrors({
                     email: 'Email này đã được đăng ký. Vui lòng sử dụng email khác.'
                 });
