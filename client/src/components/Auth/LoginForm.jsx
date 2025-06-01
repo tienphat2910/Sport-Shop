@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from '../../utils/api';
+import LoginSuccessModal from './LoginSuccessModal';
 
 const LoginForm = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -11,6 +14,8 @@ const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [userName, setUserName] = useState('');
 
     const handleChange = (e) => {
         const { name, value, checked, type } = e.target;
@@ -58,106 +63,128 @@ const LoginForm = () => {
 
         setLoading(true);
 
-        // Simulate API call
         try {
-            // Here you would make the actual API call to authenticate
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Real API call to authenticate
+            const response = await loginUser({
+                email: formData.email,
+                password: formData.password
+            });
 
-            console.log('Login successful with:', formData);
-            // Redirect or show success message
+            console.log('Login successful:', response);
+
+            // Set user name and show success modal
+            setUserName(response.user?.name || '');
+            setShowSuccessModal(true);
+
         } catch (error) {
             console.error('Login error:', error);
             setErrors({
-                form: 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.'
+                form: error.message || 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.'
             });
-        } finally {
             setLoading(false);
         }
     };
 
+    const handleModalClose = () => {
+        setShowSuccessModal(false);
+        // Navigate to home page after closing the modal
+        navigate('/');
+        // Force reload to update header with user information
+        window.location.reload();
+    };
+
     return (
-        <form onSubmit={handleSubmit} noValidate>
-            {/* Show form error if any */}
-            {errors.form && (
-                <div className="alert alert-danger py-2" role="alert">
-                    {errors.form}
-                </div>
-            )}
+        <>
+            <form onSubmit={handleSubmit} noValidate>
+                {/* Show form error if any */}
+                {errors.form && (
+                    <div className="alert alert-danger py-2" role="alert">
+                        {errors.form}
+                    </div>
+                )}
 
-            {/* Email field */}
-            <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email</label>
-                <input
-                    type="email"
-                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Nhập email của bạn"
-                    required
-                />
-                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-            </div>
-
-            {/* Password field */}
-            <div className="mb-3">
-                <label htmlFor="password" className="form-label">Mật khẩu</label>
-                <div className="input-group">
+                {/* Email field */}
+                <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email</label>
                     <input
-                        type={showPassword ? "text" : "password"}
-                        className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                        id="password"
-                        name="password"
-                        value={formData.password}
+                        type="email"
+                        className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                        id="email"
+                        name="email"
+                        value={formData.email}
                         onChange={handleChange}
-                        placeholder="Nhập mật khẩu"
+                        placeholder="Nhập email của bạn"
                         required
                     />
-                    <button
-                        className="btn btn-outline-secondary"
-                        type="button"
-                        onClick={togglePasswordVisibility}
-                    >
-                        <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                    </button>
-                    {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+                    {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                 </div>
-            </div>
 
-            {/* Remember me & Forgot password */}
-            <div className="d-flex justify-content-between mb-4">
-                <div className="form-check">
-                    <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="rememberMe"
-                        name="rememberMe"
-                        checked={formData.rememberMe}
-                        onChange={handleChange}
-                    />
-                    <label className="form-check-label small" htmlFor="rememberMe">
-                        Ghi nhớ đăng nhập
-                    </label>
+                {/* Password field */}
+                <div className="mb-3">
+                    <label htmlFor="password" className="form-label">Mật khẩu</label>
+                    <div className="input-group">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                            id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Nhập mật khẩu"
+                            required
+                        />
+                        <button
+                            className="btn btn-outline-secondary"
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                        >
+                            <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                        </button>
+                        {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+                    </div>
                 </div>
-                <Link to="/forgot-password" className="small text-decoration-none">Quên mật khẩu?</Link>
-            </div>
 
-            {/* Submit button */}
-            <button
-                type="submit"
-                className="btn btn-primary w-100 py-2 mb-3"
-                style={{ backgroundColor: '#22a7e0', borderColor: '#22a7e0' }}
-                disabled={loading}
-            >
-                {loading ? (
-                    <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Đang đăng nhập...
-                    </>
-                ) : 'Đăng nhập'}
-            </button>
-        </form>
+                {/* Remember me & Forgot password */}
+                <div className="d-flex justify-content-between mb-4">
+                    <div className="form-check">
+                        <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="rememberMe"
+                            name="rememberMe"
+                            checked={formData.rememberMe}
+                            onChange={handleChange}
+                        />
+                        <label className="form-check-label small" htmlFor="rememberMe">
+                            Ghi nhớ đăng nhập
+                        </label>
+                    </div>
+                    <Link to="/forgot-password" className="small text-decoration-none">Quên mật khẩu?</Link>
+                </div>
+
+                {/* Submit button */}
+                <button
+                    type="submit"
+                    className="btn btn-primary w-100 py-2 mb-3"
+                    style={{ backgroundColor: '#22a7e0', borderColor: '#22a7e0' }}
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <>
+                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Đang đăng nhập...
+                        </>
+                    ) : 'Đăng nhập'}
+                </button>
+            </form>
+
+            {/* Login Success Modal */}
+            <LoginSuccessModal
+                show={showSuccessModal}
+                onClose={handleModalClose}
+                userName={userName}
+            />
+        </>
     );
 };
 

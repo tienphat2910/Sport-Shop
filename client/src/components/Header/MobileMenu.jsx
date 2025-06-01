@@ -1,7 +1,35 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { isAuthenticated, getCurrentUser, logoutUser } from '../../utils/api';
 
 const MobileMenu = () => {
+    const navigate = useNavigate();
+    const [authenticated, setAuthenticated] = useState(false);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const checkAuth = () => {
+            const authStatus = isAuthenticated();
+            setAuthenticated(authStatus);
+
+            if (authStatus) {
+                const userData = getCurrentUser();
+                setUser(userData);
+            } else {
+                setUser(null);
+            }
+        };
+
+        checkAuth();
+    }, []);
+
+    const handleLogout = () => {
+        logoutUser();
+        setAuthenticated(false);
+        setUser(null);
+        navigate('/login');
+    };
+
     return (
         <div className="d-lg-none w-100">
             <div className="accordion accordion-flush" id="mobileNavAccordion">
@@ -139,12 +167,40 @@ const MobileMenu = () => {
 
             {/* Account section for mobile */}
             <div className="mt-3 pt-3 border-top">
-                <Link to="/login" className="btn btn-outline-primary d-block mb-2">
-                    <i className="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập
-                </Link>
-                <Link to="/register" className="btn btn-outline-secondary d-block mb-2">
-                    <i className="fa-solid fa-user-plus me-2"></i>Đăng ký
-                </Link>
+                {authenticated && user ? (
+                    <>
+                        <div className="d-flex align-items-center mb-3">
+                            <div
+                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2"
+                                style={{ width: '40px', height: '40px', fontSize: '16px' }}
+                            >
+                                {user.name.split(' ').map(part => part[0]).join('').toUpperCase().substring(0, 2)}
+                            </div>
+                            <div>
+                                <div className="fw-bold">{user.name}</div>
+                                <div className="text-muted small">{user.email}</div>
+                            </div>
+                        </div>
+                        <Link to="/profile" className="btn btn-outline-primary d-block mb-2">
+                            <i className="fa-solid fa-user-circle me-2"></i>Thông tin cá nhân
+                        </Link>
+                        <Link to="/orders" className="btn btn-outline-secondary d-block mb-2">
+                            <i className="fa-solid fa-shopping-bag me-2"></i>Đơn hàng của tôi
+                        </Link>
+                        <button onClick={handleLogout} className="btn btn-outline-danger d-block mb-2">
+                            <i className="fa-solid fa-sign-out-alt me-2"></i>Đăng xuất
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/login" className="btn btn-outline-primary d-block mb-2">
+                            <i className="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập
+                        </Link>
+                        <Link to="/register" className="btn btn-outline-secondary d-block mb-2">
+                            <i className="fa-solid fa-user-plus me-2"></i>Đăng ký
+                        </Link>
+                    </>
+                )}
                 <div className="d-flex justify-content-between mt-3">
                     <Link to="/wishlist" className="text-decoration-none text-secondary small">
                         <i className="fa-regular fa-heart me-1"></i> Yêu thích

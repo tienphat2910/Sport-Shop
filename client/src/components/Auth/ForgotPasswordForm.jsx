@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { requestPasswordReset } from '../../utils/api';
 
 const ForgotPasswordForm = () => {
     const [email, setEmail] = useState('');
@@ -32,15 +33,17 @@ const ForgotPasswordForm = () => {
         setLoading(true);
 
         try {
-            // Simulate API call to request password reset
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Real API call to request password reset
+            const response = await requestPasswordReset(email);
 
-            // Simulate success
-            setSuccessMessage('Link đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư và làm theo hướng dẫn.');
+            setSuccessMessage(
+                response.message ||
+                'Link đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư và làm theo hướng dẫn.'
+            );
             setEmail('');
         } catch (error) {
             console.error('Password reset error:', error);
-            setError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+            setError(error.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.');
         } finally {
             setLoading(false);
         }

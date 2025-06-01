@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { registerUser } from '../../utils/api';
 
 const RegisterForm = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        fullName: '',
+        name: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -13,6 +16,7 @@ const RegisterForm = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState('');
 
     const handleChange = (e) => {
         const { name, value, checked, type } = e.target;
@@ -42,8 +46,8 @@ const RegisterForm = () => {
         const newErrors = {};
 
         // Full name validation
-        if (!formData.fullName.trim()) {
-            newErrors.fullName = 'Vui lòng nhập họ tên';
+        if (!formData.name?.trim()) {
+            newErrors.name = 'Vui lòng nhập họ tên';
         }
 
         // Email validation
@@ -83,18 +87,36 @@ const RegisterForm = () => {
 
         setLoading(true);
 
-        // Simulate API call
         try {
-            // Here you would make the actual API call to register the user
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Real API call to register the user
+            const userData = {
+                name: formData.name,
+                email: formData.email,
+                password: formData.password
+            };
 
-            console.log('Registration successful with:', formData);
-            // Redirect or show success message
+            const response = await registerUser(userData);
+
+            console.log('Registration successful:', response);
+
+            setSuccessMessage(
+                'Đăng ký thành công! Chúng tôi đã gửi mã OTP đến email của bạn. Vui lòng kiểm tra email và xác thực tài khoản.'
+            );
+
+            // Optionally navigate to verification page or login page
+            // setTimeout(() => navigate('/verify-email', { state: { email: formData.email } }), 3000);
         } catch (error) {
             console.error('Registration error:', error);
-            setErrors({
-                form: 'Có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.'
-            });
+
+            if (error.status === 400 && error.data?.message?.includes('Email already registered')) {
+                setErrors({
+                    email: 'Email này đã được đăng ký. Vui lòng sử dụng email khác.'
+                });
+            } else {
+                setErrors({
+                    form: error.message || 'Có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.'
+                });
+            }
         } finally {
             setLoading(false);
         }
@@ -102,6 +124,13 @@ const RegisterForm = () => {
 
     return (
         <form onSubmit={handleSubmit} noValidate>
+            {/* Success message */}
+            {successMessage && (
+                <div className="alert alert-success" role="alert">
+                    {successMessage}
+                </div>
+            )}
+
             {/* Show form error if any */}
             {errors.form && (
                 <div className="alert alert-danger py-2" role="alert">
@@ -111,18 +140,18 @@ const RegisterForm = () => {
 
             {/* Full Name field */}
             <div className="mb-3">
-                <label htmlFor="fullName" className="form-label">Họ và tên</label>
+                <label htmlFor="name" className="form-label">Họ và tên</label>
                 <input
                     type="text"
-                    className={`form-control ${errors.fullName ? 'is-invalid' : ''}`}
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
+                    className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+                    id="name"
+                    name="name"
+                    value={formData.name || ''}
                     onChange={handleChange}
                     placeholder="Nhập họ và tên của bạn"
                     required
                 />
-                {errors.fullName && <div className="invalid-feedback">{errors.fullName}</div>}
+                {errors.name && <div className="invalid-feedback">{errors.name}</div>}
             </div>
 
             {/* Email field */}

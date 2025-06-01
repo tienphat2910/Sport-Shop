@@ -11,7 +11,6 @@ const Navigation = () => {
     const [activeSubMenu, setActiveSubMenu] = useState(null);
     const [hoveredItem, setHoveredItem] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
-    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
 
     // Check if the viewport is mobile
@@ -26,21 +25,11 @@ const Navigation = () => {
         // Add event listener
         window.addEventListener('resize', checkIfMobile);
 
-        // Close dropdown when clicking outside
-        const handleClickOutside = (event) => {
-            if (userDropdownOpen && !event.target.closest('.user-dropdown-container')) {
-                setUserDropdownOpen(false);
-            }
-        };
-
-        document.addEventListener('click', handleClickOutside);
-
         // Cleanup
         return () => {
             window.removeEventListener('resize', checkIfMobile);
-            document.removeEventListener('click', handleClickOutside);
         };
-    }, [userDropdownOpen]);
+    }, []);
 
     // Handle hover and click events
     const handleMainMenuEnter = (menu) => {
@@ -81,13 +70,6 @@ const Navigation = () => {
 
     const handleLinkLeave = () => {
         setHoveredItem(null);
-    };
-
-    // Toggle user dropdown
-    const toggleUserDropdown = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setUserDropdownOpen(!userDropdownOpen);
     };
 
     // Toggle search overlay
@@ -166,10 +148,8 @@ const Navigation = () => {
                         {/* Right side icons for desktop */}
                         {!isMobile && (
                             <div className="d-flex align-items-center">
-                                <UserDropdown
-                                    userDropdownOpen={userDropdownOpen}
-                                    toggleUserDropdown={toggleUserDropdown}
-                                />
+                                {/* Use the UserDropdown without passing any props */}
+                                <UserDropdown />
                                 <button
                                     className="nav-link px-2 px-md-3 btn border-0 p-0"
                                     onClick={toggleSearch}
